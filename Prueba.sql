@@ -43,3 +43,5 @@ create table if not exists impartir
 	constraint fk_impartir_profesorado foreign key (coddepto, codprof) references profesorado (coddepto, codprof)
 		on delete no action on update cascade
 );
+
+
