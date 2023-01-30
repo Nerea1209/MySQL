@@ -117,11 +117,12 @@ create table if not exists vigilar
     codturno int unsigned,
     fecini date,
     fecfin date,
+    
     /*constraint pk_vigilar primary key 
     (codsala, codsegur, codturno, fecini)*/ -- desnormalización
     constraint pk_vigilar primary key (codvigilancia), -- desnormalización
 	constraint fk_vigilar_seguridad
-		foreign key (codseguridad)
+		foreign key (codsegur)
         references seguridad (codseguridad)
         on delete no action on update cascade,
 	constraint fk_vigilar_salas foreign key (codsala)
@@ -159,5 +160,54 @@ create table if not exists deptos
 alter table empleados
 	add constraint fk_empleados_deptos foreign key (coddepto)
     references deptos (coddepto) on delete no action on update cascade;
+
+/*** CAMBIOS EN FOREIGN KEY  ****/
+
+/* A. Queremos que si se elimina un empleado,
+      se elimine el
+      restaurador/vigilante relacionado
+*/
+
+alter table restauradores
+	drop foreign key fk_restaurador_emple,
+    add constraint fk_restauradores_empleados
+		foreign key (codemple) references empleados (codemple)
+			on delete cascade on update cascade;
+            
+alter table seguridad
+	drop foreign key fk_restauradores_seguridad,
+	add constraint fk_restauradores_seguridad
+		foreign key (codemple) references empleados (codemple)
+			on delete cascade on update cascade;
+
+/* B. No vamos a permitir que se modifique
+    el código de estilo
+      de una obra, en todo caso se le asignará el valor nulo
+*/
+
+alter table obras
+	drop foreign key fk_obras_estilos,
+    add constraint fk_obras_estilos foreign key (codestilo)
+    references estilos (codestilo)
+    on delete no action
+    on update SET NULL;
+/* C. Vamos a permitir que se eliminen artistas, en este caso
+      las obras se quedarán sin autor
+*/
+
+
+
+/* D. Vamos a permitir que se eliminen artistas, en este caso
+      las obras se quedarán sin autor, pero, una vez que demos
+    de alta una obra, el código de artista no podrá cambiar
+*/
+
+alter table obras
+	drop foreign key fk_obras_artistas,
+    add constraint fk_obras_artistas foreign key (codartista)
+    references artistas (codartista)
+    on delete set null on update no action;
+    
+    
     
 /*Apartado D ==> Cambiamos a la opcion B en la jerarquía*/
