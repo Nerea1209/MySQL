@@ -3,7 +3,7 @@ CREATE DATABASE if not exists BDMUSEO;
 USE BDMUSEO;
 /* CREAMOS LAS TABLAS ==> EL ORDEN ES IMPORTANTE (INTEGRIDAD REFERENCIAL) */
 /************************************/
-
+drop table if exists artistas;
 create table if not exists artistas
     (codartista int unsigned, -- int(4)
      nomartista varchar(60),
@@ -12,6 +12,8 @@ create table if not exists artistas
 	 fecnacim date,
     constraint pk_artistas primary key (codartista)
     );
+    
+drop table if exists tipobras;
 create table if not exists tipobras
     (codtipobra int unsigned,
      destipobra varchar(20),
@@ -24,12 +26,14 @@ create table if not exists estilos
     constraint pk_estilos primary key (codestilo)
     );
 
+drop table if exists salas;
 create table if not exists salas
     (codsala int unsigned,
      nomsala varchar(20),
     constraint pk_salas primary key (codsala)
     );
 
+drop table if exists obras;
 create table if not exists obras
     (codobra int unsigned,
      nomobra varchar(20),
@@ -51,11 +55,13 @@ create table if not exists obras
         references salas(codsala) 
         on delete no action on update cascade
     );
+    
 alter table obras add column codartista int unsigned,
 	add constraint fk_obras_artistas foreign key (codartista)
 		references artistas(codartista) 
         on delete no action on update cascade;
-        
+      
+drop table if exists empleados;
 create table if not exists empleados
     (codemple int unsigned,
      nomemle varchar(20),
@@ -66,17 +72,21 @@ create table if not exists empleados
      numsegsoc char(15),
     constraint pk_empleados primary key (codemple)
     );
+
+drop table if exists seguridad;
 create table if not exists seguridad
-    (codsegur int unsigned,
+    (codseguridad int unsigned,
      codemple int unsigned,
 	 codsala int unsigned,
      observaciones varchar(200),
-    constraint pk_seguridad primary key (codsegur),
+    constraint pk_seguridad primary key (codseguridad),
     constraint fk_seguridad_empleados foreign key (codemple)
         references empleados (codemple) on delete no action on update cascade,
 	constraint fk_seguridad_salas foreign key (codsala)
         references salas (codsala) on delete no action on update cascade
     );
+    
+drop table if exists restauradores;
 create table if not exists restauradores
     (codrestaurador int unsigned,
      codemple int unsigned,
@@ -85,6 +95,7 @@ create table if not exists restauradores
     constraint fk_restauradores_empleados foreign key (codemple)
         references empleados (codemple) on delete no action on update cascade
     );
+    
 drop table if exists restauraciones;
 create table if not exists restauraciones
     (codrestaurador int unsigned,
@@ -101,6 +112,7 @@ create table if not exists restauraciones
     
     );
 
+drop table if exists turnos;
 create table if not exists turnos
 (
 	codturno int unsigned,
@@ -109,6 +121,7 @@ create table if not exists turnos
     constraint pk_turnos primary key (codturno)
 );
 
+drop table if exists vigilar;
 create table if not exists vigilar
 (
 	codvigilancia int unsigned, -- desnormalización
@@ -117,7 +130,6 @@ create table if not exists vigilar
     codturno int unsigned,
     fecini date,
     fecfin date,
-    
     /*constraint pk_vigilar primary key 
     (codsala, codsegur, codturno, fecini)*/ -- desnormalización
     constraint pk_vigilar primary key (codvigilancia), -- desnormalización
@@ -137,7 +149,7 @@ create table if not exists vigilar
 /*Inserción de datos ==> pendiente hasta unidad 5*/
 
 alter table seguridad
-	drop foreign key fk_seguridad_sala,
+	drop foreign key fk_seguridad_salas,
     drop column codsala;
     
 /*Apartado B ==> Cambiar el nombre de una clave
@@ -150,6 +162,7 @@ alter table restauradores
     
 /*Apartado C ==> Los empleados pertenecen a un depto*/
 
+drop table if exists deptos;
 create table if not exists deptos
 (
 	coddepto int unsigned,
@@ -158,6 +171,7 @@ create table if not exists deptos
 );
 
 alter table empleados
+	add column coddepto int unsigned,
 	add constraint fk_empleados_deptos foreign key (coddepto)
     references deptos (coddepto) on delete no action on update cascade;
 
@@ -169,7 +183,7 @@ alter table empleados
 */
 
 alter table restauradores
-	drop foreign key fk_restaurador_emple,
+	drop foreign key fk_restauradores_empleados,
     add constraint fk_restauradores_empleados
 		foreign key (codemple) references empleados (codemple)
 			on delete cascade on update cascade;
@@ -207,7 +221,5 @@ alter table obras
     add constraint fk_obras_artistas foreign key (codartista)
     references artistas (codartista)
     on delete set null on update no action;
-    
-    
     
 /*Apartado D ==> Cambiamos a la opcion B en la jerarquía*/
