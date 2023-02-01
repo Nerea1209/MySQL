@@ -1,49 +1,78 @@
+/*
+ESQUEMA RELACIONAL
+-- 	PROFESORES(pk[numprof], despacho, fecnacim, fecingreso, 
+	sueldo, nomprof, jefe*, numdepto*);
+-- DEPTOS(pk[numdepto], presupuesto, nomdepto, ubicacion);
+-- ASIGNATURAS(pk[numasigna], nomasigna, curso);
+-- IMPARTEN(pk[numasigna*, numprof*], anio_acad, grupo);
+*/
+
+drop database if exists ejercicio2;
 create database if not exists ejercicio2;
 use ejercicio2;
 
-create table if not exists deptos
-(
-	numdepto int unsigned not null, -- primary key,
-    presupuesto double(6,2),
-    nomdepto varchar(60),
-    ubicacion varchar(30),
-    constraint pk_deptos primary key (numdepto)
-);
-
+-- ASIGNATURAS(pk[numasigna], nomasigna, curso);
+drop table if exists asignaturas;
 create table if not exists asignaturas
 (
-	numasigna int unsigned not null, -- primary key
+	numasigna int unsigned,
     nomasigna varchar(60),
-    curso varchar(6),
+    curso char(4),
     constraint pk_asignaturas primary key (numasigna)
 );
 
-create table if not exists profesorado
+-- DEPTOS(pk[numdepto], presupuesto, nomdepto, ubicacion);
+drop table if exists deptos;
+create table if not exists deptos
 (
-	numprof int unsigned not null, -- primary key,
-    despacho varchar(30),
-    fecnacim date null,
-    fecingreso date null,
-    sueldo double(6,2),
-    nomprof varchar(60),
-    jefe int unsigned,
-    numdepto int unsigned,
-    constraint pk_profesorado primary key (numprof),
-    constraint fk_jefes foreign key (jefe) references profesorado (numprof)
-		on delete no action on update cascade,
-	constraint fk_profesorado_deptos foreign key (numdepto) references deptos (numdepto)
-		on delete no action on update cascade
+	numdepto int unsigned,
+    nomdepto varchar(60),
+    presupuesto double(10, 2),
+    ubicacion varchar(100),
+    constraint pk_deptos primary key (numdepto)
 );
 
+-- 	PROFESORES(pk[numprof], despacho, fecnacim, fecingreso, 
+--  sueldo, nomprof, jefe*, numdepto*);
+drop table if exists profesores;
+create table if not exists profesores
+(
+	numprof int unsigned,
+    despacho int unsigned,
+    fecnacim date,
+    fecingreso date,
+    sueldo double(10, 2),
+    nomprof varchar(60),
+    numjefe int unsigned,
+    numdepto int unsigned,
+    constraint pk_profesores primary key (numprof),
+    constraint fk_profesores_profesores foreign key (numjefe)
+		references profesores (numprof)
+        on delete no action on update cascade,
+	constraint fk_profesores_deptos foreign key (numdepto)
+		references deptos (numdepto)
+        on delete no action on update cascade
+);
+
+-- IMPARTEN(pk[numasigna*, numprof*], anio_acad, grupo);
+drop table if exists imparten;
 create table if not exists imparten
 (
-	numasigna int unsigned not null,
-    numprof int unsigned not null,
+	numprof int unsigned,
+    numasigna int unsigned,
     anio_acad char(4),
-    grupo varchar(6),
-    constraint pk_imparten primary key (numasigna, numprof),
-    constraint fk_imparten_asignaturas foreign key (numasigna) references asignaturas (numasigna)
-		on delete no action on update cascade,
-	constraint fk_imparten_profesorado foreign key (numprof) references profesorado (numprof)
-		on delete no action on update cascade
+    grupo char(4),
+    constraint pk_imparten primary key (numprof, numasigna),
+    constraint fk_imparten_asignaturas foreign key (numasigna)
+		references asignaturas (numasigna)
+        on delete no action on update cascade,
+	constraint fk_imparten_profesores foreign key (numprof)
+		references profesores (numprof)
+        on delete no action on update cascade
 );
+
+alter table profesores
+	drop foreign key fk_profesores_profesores,
+    add constraint fk_jefes foreign key (numjefe)
+		references profesores (numprof)
+        on delete no action on update cascade;
