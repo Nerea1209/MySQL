@@ -1,22 +1,25 @@
 /*
 ESQUEMA RELACIONAL
--- 	PROFESORES(pk[numprof], despacho, fecnacim, fecingreso, 
-	sueldo, nomprof, jefe*, numdepto*);
--- DEPTOS(pk[numdepto], presupuesto, nomdepto, ubicacion);
--- ASIGNATURAS(pk[numasigna], nomasigna, curso);
--- IMPARTEN(pk[numasigna*, numprof*], anio_acad, grupo);
+-- SUJETOS(pk[codsujeto], nomsujeto, ape1sujeto, ape2sujeto, dni, 
+	dirpostal, email, tlfcontacto);
+-- CLIENTELA(pk[codcli], codsujeto*, estadocivil);
+-- ABOGADOS(pk[codabogado], codsujeto*, numcolegiado);
+-- TIPOSCASOS(PK[codtipocaso],desTipoCaso)
+-- CASOS(PK[codcaso,codtipocaso*],descaso,codcli*,presupuesto)
+-- ABOGADOSENCASOS(PK[[codcaso,codtipocaso]*,codabogado,fecinicio], numdias)
 */
 
-drop database if exists ejercicio2;
-create database if not exists ejercicio2;
-use ejercicio2;
+drop database if exists examen21_22;
+create database if not exists examen21_22;
+use examen21_22;
 
--- ASIGNATURAS(pk[numasigna], nomasigna, curso);
-drop table if exists asignaturas;
-create table if not exists asignaturas
+-- SUJETOS(pk[codsujeto], nomsujeto, ape1sujeto, ape2sujeto, dni, 
+-- dirpostal, email, tlfcontacto);
+drop table if exists sujetos;
+create table if not exists sujetos
 (
-	numasigna int unsigned,
-    nomasigna varchar(60),
+	codsujeto int unsigned,
+    nomsujeto varchar(60),
     curso char(4),
     constraint pk_asignaturas primary key (numasigna)
 );
@@ -70,10 +73,3 @@ create table if not exists imparten
 		references profesores (numprof)
         on delete no action on update cascade
 );
-
--- Modifica el nombre de la restriccion asociada a JEFES
-alter table profesores
-	drop foreign key fk_profesores_profesores,
-    add constraint fk_jefes foreign key (numjefe)
-		references profesores (numprof)
-        on delete no action on update cascade;
