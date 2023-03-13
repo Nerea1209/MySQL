@@ -40,11 +40,97 @@ from departamentos
 where presude >= 6000;
 -- 9. Obtener el nombre completo y en una sola columna de los empleados
 -- que llevan trabajando en nuestra empresa más de 1 año
+set @fechaHoy = curdate();
 select concat_ws(' ', nomem, ape1em, ape2em) as 'Nombre Completo',
-	datediff(year, fecinem, curdate())  as 'Experiencia'
+	(year(@fechaHoy) - year(fecinem)) as 'Experiencia',
+    fecinem
 from empleados
-where datediff(year, fecinem, curdate()) > 1;
+where (year(@fechaHoy) - year(fecinem)) > 1;
 -- PREGUNTAR POR QUÉ NO FUNCIONA
 
 -- 10. Obtener el nombre completo y en una sola columna de los empleados
 -- que llevan trabajando en nuestra empresa entre 1 y 3 años
+
+
+-- 11. Prepara un procedimiento almacenado que ejecute la consulta 
+-- del apartado 1 y otro que ejecute la del apartado 5.
+delimiter $$
+drop procedure if exists muestraEmpleados $$
+create procedure muestraEmpleados()
+begin
+
+	SELECT * FROM empleados;
+
+end $$
+
+delimiter ;
+
+call muestraEmpleados();
+
+
+-- 12. Prepara un procedimiento almacenado que ejecute la consulta del 
+-- apartado 2 de forma que nos sirva para averiguar la extensión del 
+-- empleado que deseemos en cada caso.
+delimiter $$
+drop procedure if exists muestraExtension $$
+create procedure muestraExtension
+	(nombre varchar(60),
+    ape1 varchar(60)
+    )
+begin
+
+	select extelem
+    from empleados
+    where nomem = nombre and ape1em= ape1;
+
+end $$
+
+delimiter ;
+
+call muestraExtension('Juan', 'López');
+
+-- para que devuelva en vez de mostrar usamos funciones
+-- SOLO PUEDE DEVOLVER UN VALOR
+delimiter $$
+drop function if exists devuelveExtension $$
+create function devuelveExtension
+	(nombre varchar(60),
+    ape1 varchar(60)
+    )
+returns char(3)
+deterministic
+begin
+	declare extension char(3);
+    
+    select extelem into extension
+	from empleados
+	where nomem = nombre and ape1em= ape1;
+    
+    return extension;
+/*
+    set extension = (select extelem
+					from empleados
+					where nomem = nombre and ape1em= ape1
+					);
+	return extension;
+*/
+/*
+	return (select extelem
+			from empleados
+			where nomem = nombre and ape1em= ape1
+			);
+*/
+end $$
+
+delimiter ;
+
+select devuelveExtension('Juan', 'López');
+set @miExtension = devuelveExtension('Juan', 'López');
+select @miExtension;
+
+/*
+rutina = procedimiento o funcion
+mostrar = procedimiento
+devulve un valor = funcion | procedimiento
+devuelve mas de un valor = procedimiento
+*/
