@@ -46,11 +46,14 @@ select concat_ws(' ', nomem, ape1em, ape2em) as 'Nombre Completo',
     fecinem
 from empleados
 where (year(@fechaHoy) - year(fecinem)) > 1;
--- PREGUNTAR POR QUÉ NO FUNCIONA
 
 -- 10. Obtener el nombre completo y en una sola columna de los empleados
 -- que llevan trabajando en nuestra empresa entre 1 y 3 años
-
+select concat_ws(' ', nomem, ape1em, ape2em) as 'Nombre Completo',
+	(year(@fechaHoy) - year(fecinem)) as 'Experiencia',
+    fecinem
+from empleados
+where (year(@fechaHoy) - year(fecinem)) > 1 and (year(@fechaHoy) - year(fecinem)) < 3;
 
 -- 11. Prepara un procedimiento almacenado que ejecute la consulta 
 -- del apartado 1 y otro que ejecute la del apartado 5.
@@ -134,3 +137,106 @@ mostrar = procedimiento
 devulve un valor = funcion | procedimiento
 devuelve mas de un valor = procedimiento
 */
+
+/*
+	13. Prepara un procedimiento almacenado que ejecute la consulta del 
+	apartado 3 y otro para la del apartado 4 de forma que nos sirva para 
+	averiguar el nombre de aquellos que tengan el número de hijos que 
+	deseemos en cada caso.
+*/
+delimiter $$
+drop procedure if exists muestraEmpleadosConHijos $$
+create procedure muestraEmpleadosConHijos(
+	numHijos tinyint)
+begin
+
+	SELECT concat_ws(' ', nomem, ape1em, ape2em) as 'Nombre Empleado', numhiem as 'Número de hijos'
+	FROM empleados
+	where numhiem = numHijos;
+
+end $$
+
+delimiter ;
+
+call muestraEmpleadosConHijos(3);
+
+/*
+	14. Prepara un procedimiento almacenado que, dado el nombre de un 
+    centro de trabajo, nos devuelva su dirección.
+*/
+delimiter $$
+drop procedure if exists direccionCentro $$
+create procedure direccionCentro(
+	nombreCentro varchar(60)
+    )
+begin
+	select nomce, dirce
+    from centros
+    where nomce = nombreCentro;
+end$$
+
+delimiter ;
+
+call direccionCentro(' SEDE CENTRAL');
+
+/*
+	15. Prepara un procedimiento almacenado que ejecute la consulta del apartado 7 
+    de forma que nos sirva para averiguar, dada una cantidad, el nombre de los 
+    departamentos que tienen un presupuesto superior a dicha cantidad.
+*/
+delimiter $$
+drop procedure if exists presupuestoDeptos $$
+create procedure presupuestoDeptos(
+	cantidad decimal(10,2)
+    )
+begin
+	select nomde, presude
+    from departamentos
+    where presude > cantidad;
+end$$
+
+delimiter ;
+
+call presupuestoDeptos(5000);
+
+/*
+	16. Prepara un procedimiento almacenado que ejecute la consulta del apartado 8 
+    de forma que nos sirva para averiguar, dada una cantidad, el nombre de los 
+    departamentos que tienen un presupuesto igual o superior a dicha cantidad.
+*/
+
+delimiter $$
+drop procedure if exists presupuestoDeptos2 $$
+create procedure presupuestoDeptos2(
+	cantidad decimal(10,2)
+    )
+begin
+	select nomde, presude
+    from departamentos
+    where presude >= cantidad;
+end$$
+
+delimiter ;
+
+call presupuestoDeptos2(5000);
+
+/*
+	17. Prepara un procedimiento almacenado que ejecute la consulta del 
+    apartado 9 de forma que nos sirva para averiguar, dada una fecha, 
+    el nombre completo y en una sola columna de los empleados que llevan 
+    trabajando con nosotros desde esa fecha.
+*/
+delimiter $$
+drop procedure if exists experienciaEmpleados $$
+create procedure experienciaEmpleados(
+	fechaInicio date
+    )
+begin
+	select concat_sw(' ', nomem, ape1em, ape2em) as 'Nombre Empleado', feciniem
+    from empleados
+    where feciniem = fechaInicio;
+end$$
+
+delimiter ;
+
+call experienciaEmpleados(5000);
