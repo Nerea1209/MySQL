@@ -227,16 +227,62 @@ call presupuestoDeptos2(5000);
     trabajando con nosotros desde esa fecha.
 */
 delimiter $$
-drop procedure if exists experienciaEmpleados $$
-create procedure experienciaEmpleados(
+drop procedure if exists experienciaEmpleados1 $$
+create procedure experienciaEmpleados1(
 	fechaInicio date
     )
 begin
-	select concat_sw(' ', nomem, ape1em, ape2em) as 'Nombre Empleado', feciniem
+	select concat_ws(' ', nomem, ape1em, ape2em) as 'Nombre Empleado', fecinem
     from empleados
-    where feciniem = fechaInicio;
+    where fecinem <= fechaInicio;
 end$$
 
 delimiter ;
 
-call experienciaEmpleados(5000);
+call experienciaEmpleados1('2018-09-12');
+
+/*
+	18. Prepara un procedimiento almacenado que ejecute la consulta del apartado 10 
+    de forma que nos sirva para averiguar, dadas dos fechas, el nombre completo y 
+    en una sola columna de los empleados que comenzaron a trabajar con nosotros en 
+    el periodo de tiempo comprendido entre esas dos fechas.
+*/
+
+delimiter $$
+drop procedure if exists experienciaEmpleados2 $$
+create procedure experienciaEmpleados2(
+	fecha1 date,
+    fecha2 date
+    )
+begin
+	select concat_ws(' ', nomem, ape1em, ape2em) as 'Nombre Empleado', fecinem
+    from empleados
+    where fecinem <= fecha2 and fecinem >= fecha1;
+end$$
+
+delimiter ;
+
+call experienciaEmpleados2('1800-09-12', '2018-09-12');
+
+/*
+	19. Prepara un procedimiento almacenado que ejecute la consulta del apartado 10 
+    de forma que nos sirva para averiguar, dadas dos fechas, el nombre completo y 
+    en una sola columna de los empleados que comenzaron a trabajar con nosotros fuera 
+    del periodo de tiempo comprendido entre esas dos fechas.
+*/
+
+delimiter $$
+drop procedure if exists experienciaEmpleados3 $$
+create procedure experienciaEmpleados3(
+	fecha1 date,
+    fecha2 date
+    )
+begin
+	select concat_ws(' ', nomem, ape1em, ape2em) as 'Nombre Empleado', fecinem
+    from empleados
+    where fecinem >= fecha2 or fecinem <= fecha1;
+end$$
+
+delimiter ;
+
+call experienciaEmpleados3('1800-09-12', '2000-09-12');
