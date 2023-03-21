@@ -33,12 +33,14 @@ drop procedure if exists fechaIngresoYDireccion $$
 create procedure fechaIngresoYDireccion(
 	numEmpleado int, out fechaInicio date, out nomDirector varchar(20))
 begin
-	select fechaInicio = empleados.fecinem, nomDirector = empleados.nomem
+	select empleados.fecinem, e.nomem
+    into fechaInicio, nomDirector
     from empleados 
 		join departamentos on empleados.numde = departamentos.numde
         join dirigir on departamentos.numde = dirigir.numdepto
         join empleados as e on dirigir.numempdirec = e.numem
-	where empleados.numem = numEmpleado;
+	where empleados.numem = numEmpleado
+    and (dirigir.fecfindir is null or dirigir.fecfindir >= curdate());
 end $$
 delimiter ;
 
