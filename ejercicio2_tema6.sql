@@ -67,6 +67,7 @@ where departamentos.nomde = 'Finanzas';
 
 
 select concat_ws(' ', empleados.nomem, empleados.ape1em, empleados.ape2em)
+	as 'Nombre Completo'
 from empleados 
 	join dirigir on empleados.numem = dirigir.numempdirec
 	join departamentos on dirigir.numdepto = departamentos.numde;
@@ -76,15 +77,56 @@ from empleados
     empleado que queramos en cada caso.
 */
 
+
+
 /*
 	12. Como el apartado 3 pero generalízalo para que podamos buscar 
     los empleados de un solo departamento.
 */
 
+delimiter $$
+drop procedure if exists empleadosDepto $$
+create procedure empleadosDepto(
+	numDepto int)
+begin
+	select empleados.nomem
+    from empleados 
+		left join departamentos on empleados.numde = departamentos.numde
+	where departamentos.numde = numDepto;
+end $$
+delimiter ;
+
+call empleadosDepto(110);
 /*
 	13. Como el apartado 4. pero generalízalo para buscar el director del 
     departamento que queramos en cada caso.
-	14. Como el apartado 5 pero generalízalo para buscar por el centro que queramos.
+*/
+
+delimiter $$
+drop function if exists dirDepto $$
+create function dirDepto (
+	numDepto int)
+returns varchar(20) deterministic
+begin
+	return (select empleados.nomem
+			from departamentos
+				join dirigir on departamentos.numde = dirigir.numdepto
+					join empleados on dirigir.numempdirec = empleados.numem
+			where departamentos.numde = numDepto 
+				and fecfindir is null 
+					or fecfindir >= curdate()
+            );
+end $$
+
+delimiter ;
+
+select dirDepto(110);
+
+-- 14. Como el apartado 5 pero generalízalo para buscar por el centro que queramos.
+
+
+
+/*    
 	15. Como el apartado 6 pero generalizado para poder buscar el rango que deseemos.
 	16. Como el apartado 7 pero generalizado para poder buscar las extensiones 
     del departamento que queramos.
