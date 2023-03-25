@@ -123,16 +123,55 @@ delimiter ;
 select dirDepto(110);
 
 -- 14. Como el apartado 5 pero generalízalo para buscar por el centro que queramos.
+delimiter $$
 
+drop procedure if exists empleadosPorDepto $$
+create procedure empleadosPorDepto (
+	numCentro int)
+begin
+	select concat_ws(' ', empleados.nomem, empleados.ape1em, empleados.ape2em) as 'Nombre Completo'
+    from empleados
+		join departamentos on empleados.numde = departamentos.numde
+			join centros on departamentos.numce = centros.numce
+	where centros.numce = numCentro;
+end $$
+delimiter ;
 
+call empleadosPorDepto(10);
 
-/*    
-	15. Como el apartado 6 pero generalizado para poder buscar el rango que deseemos.
+-- 15. Como el apartado 6 pero generalizado para poder buscar el rango que deseemos.
+delimiter $$
+drop procedure if exists directorDepto $$
+create procedure directorDepto(
+	numDepto int, fechaInicio date, fechaFin date)
+begin
+	select concat_ws(' ', empleados.nomem, empleados.ape1em, empleados.ape2em) as 'Nombre director'
+    from departamentos
+		join dirigir on departamentos.numde = dirigir.numdepto
+			join empleados on dirigir.numempdirec = empleados.numem
+	where departamentos.numde = numDepto and dirigir.fecinidir >= fechaInicio and dirigir.fecfindir <= fechaFin;
+end $$
+delimiter ;
+select * from dirigir;
+call directorDepto(110, '1999-01-01', curdate());
+
+/*
 	16. Como el apartado 7 pero generalizado para poder buscar las extensiones 
     del departamento que queramos.
 */
-
-
+delimiter $$
+drop procedure if exists extDeptos $$
+create procedure extDeptos (
+	numDepto int)
+begin
+	select empleados.extelem
+    from empleados
+		join departamentos on empleados.numde = departamentos.numde
+	where departamentos.numde = numDepto;
+end $$
+delimiter ;
+-- ¿Cómo controlar que no se repitan?
+call extDeptos(120);
 
 
 
