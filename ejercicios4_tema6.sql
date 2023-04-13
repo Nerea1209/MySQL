@@ -9,7 +9,7 @@ order by nomem, ape1em, ape2em;
 clasificados por departamentos en orden creciente y por comisión en orden decreciente dentro de cada departamento. */
 select empleados.numde as 'Departamento',
 	concat_ws(' ', nomem, ape1em, ape2em) as 'Nombre',
-	empleados.comisem as 'Comisión',
+	ifnull(empleados.comisem, 'Sin comisión') as 'Comisión',
     empleados.salarem as 'Salario'
 from empleados
 where empleados.salarem < 190000
