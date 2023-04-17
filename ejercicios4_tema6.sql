@@ -147,3 +147,46 @@ delimiter ;
 call empSinCom(10);
 -- 39. Hallar cuantos empleados no tienen comisión por cada centro de trabajo.
 -- Es igual al anterior
+
+
+-- 40. Para la base de datos de turismo rural, queremos obtener las casas
+-- disponibles para una zona y un rango de fecha dados.
+delimiter $$
+drop procedure if exists ej40 $$
+create procedure ej40 
+	(codZona int,
+     fecha1 date,
+     fecha2 date)
+deterministic
+begin
+	select casas.codcasa, casas.nomcasa, casas.numzona, 
+		reservas.feciniestancia, reservas.numdiasestancia
+    from casas
+		join reservas on casas.codcasa = reservas.codcasa
+	where casas.numzona = codZona 
+		and reservas.feciniestancia between fecha1 and fecha2;
+end $$
+
+call ej40(2, '2020-02-01', '2023-04-12');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
