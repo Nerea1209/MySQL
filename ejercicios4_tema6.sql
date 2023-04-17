@@ -109,6 +109,23 @@ from empleados
 	join dirigir on empleados.numem = dirigir.numempdirec
 where dirigir.tipodir = 'F' or dirigir.tipodir = 'f'
 order by nomem, ape1em, ape2em;
+
+-- 26. Borrar de la tabla EMPLEADOS a los empleados cuyo salario (sin incluir la comisión)
+-- supere al salario medio de los empleados de su departamento
+/*select numem, nomem as 'Nombre', salarem as 'Salario', 
+	(select avg(empleados.salarem)
+	 from empleados) as 'Media'*/
+delete from empleados
+where empleados.salarem > (select avg(empleados.salarem)
+							   from empleados);
+
+-- 27. Disminuir en la tabla EMPLEADOS un 5% el salario de los empleados que superan 
+-- el 50% del salario máximo de su departamento.
+update empleados
+set salarem = (select salarem
+			   from empleados as e
+               where e.salarem > (max(e.salarem)*0,5));
+
 -- 29. Seleccionar los nombres de los  departamentos que no dependan de ningún otro.
 select departamentos.nomde, departamentos.depende
 from departamentos
@@ -159,15 +176,15 @@ create procedure ej40
      fecha2 date)
 deterministic
 begin
-	select casas.codcasa, casas.nomcasa, casas.numzona, 
+	select distinct casas.codcasa, casas.nomcasa, casas.codzona, 
 		reservas.feciniestancia, reservas.numdiasestancia
     from casas
 		join reservas on casas.codcasa = reservas.codcasa
-	where casas.numzona = codZona 
-		and reservas.feciniestancia between fecha1 and fecha2;
+	where casas.codzona = codZona 
+		and reservas.feciniestancia not between fecha1 and fecha2;
 end $$
 
-call ej40(2, '2020-02-01', '2023-04-12');
+call ej40(1, '2012-02-01', '2012-05-01');
 
 
 
