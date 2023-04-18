@@ -93,6 +93,31 @@ select empleados.extelem as 'Extensión telefónica',
     avg(empleados.salarem) as 'Salario medio'
 from empleados
 group by empleados.extelem;
+
+-- 22. Para los departamentos cuyo salario medio supera al de la empresa, 
+-- hallar cuantas extensiones telefónicas tienen.
+start transaction;
+create temporary table if not exists temp
+	(numde int, 
+	 media decimal(7,2)
+	);
+insert into temp
+	(numde, media)
+select numde, round(avg(empleados.salarem),2) as media
+from empleados
+group by numde;
+
+select numde, count(empleados.numext) as NumExtTel,
+	media, avg(empleados.salarem) as MediaTotal
+from empleados
+where mediaTotal < (select media 
+				    from temp
+				    where empleados.numde = temp.numde);
+
+drop temporary table  if exists temp;
+commit;
+
+
 -- 24. Hallar por orden alfabético, los nombres de los empleados que son directores en funciones.
 select concat_ws(' ', nomem, ape1em, ape2em) as 'Nombre',
 	dirigir.tipodir as 'Tipo'
@@ -115,16 +140,39 @@ order by nomem, ape1em, ape2em;
 /*select numem, nomem as 'Nombre', salarem as 'Salario', 
 	(select avg(empleados.salarem)
 	 from empleados) as 'Media'*/
+start transaction;
+create temporary table if not exists temp
+	(numde int, 
+	 media decimal(7,2)
+	);
+insert into temp
+	(numde, media)
+select numde, round(avg(empleados.salarem),2) as media
+from empleados
+group by numde;
+
 delete from empleados
-where empleados.salarem > (select avg(empleados.salarem)
-							   from empleados);
+where empleados.salarem > (select media 
+						   from temp
+                           where empleados.numde = temp.numde);
+
+drop temporary table  if exists temp;
+commit;
 
 -- 27. Disminuir en la tabla EMPLEADOS un 5% el salario de los empleados que superan 
 -- el 50% del salario máximo de su departamento.
+
+start transaction;
+create temporary table if not exists temp
+select numde, avg(empleados.salarem) as media
+from empleados
+group by numde;
+
 update empleados
-set salarem = (select salarem
-			   from empleados as e
-               where e.salarem > (max(e.salarem)*0,5));
+set salarem = (select max(salarem)
+			   from temp
+               where empleados.numde = temp.numde);
+commit;
 
 -- 29. Seleccionar los nombres de los  departamentos que no dependan de ningún otro.
 select departamentos.nomde, departamentos.depende
@@ -170,23 +218,55 @@ call empSinCom(10);
 -- disponibles para una zona y un rango de fecha dados.
 delimiter $$
 drop procedure if exists ej40 $$
-create procedure ej40 
+create procedure ej40
 	(codZona int,
      fecha1 date,
      fecha2 date)
 deterministic
 begin
-	select distinct casas.codcasa, casas.nomcasa, casas.codzona, 
-		reservas.feciniestancia, reservas.numdiasestancia
-    from casas
-		join reservas on casas.codcasa = reservas.codcasa
-	where casas.codzona = codZona 
-		and reservas.feciniestancia not between fecha1 and fecha2;
+	select codcasa, nomcasa
+	from casas
+	where codzona = codZona
+		and codcasa in(select codcasa
+						from reservas
+						where ((feciniestancia not between fecha1 and fecha2)
+						  or (adddate(reservas.feciniestancia, interval reservas.numdiasestancia day) 
+							not between fecha1 and fecha2))
+								and fecanulacion is not null);
 end $$
+delimiter ;
+call ej40(1, '2012-03-21', '2012-03-23');
 
-call ej40(1, '2012-02-01', '2012-05-01');
+update reservas
+set fecanulacion = null
+where codcasa = 1;
 
+DROP PROCEDURE IF EXISTS casasDisponibles ;
+delimiter $$
+CREATE PROCEDURE casasDisponibles (IN fechaInicio DATE, IN fechaFin DATE, IN codigoZona INT)
+BEGIN
+  SELECT codcasa, nomcasa
+  FROM casas
+  WHERE codcasa NOT IN (
+						SELECT codcasa 
+						FROM reservas 
+						WHERE fecanulacion is null 
+							and ((feciniestancia BETWEEN fechaInicio AND fechaFin) 
+								OR (date_add(feciniestancia, interval numdiasestancia day) BETWEEN fechaInicio AND fechaFin)
+									OR ((fechaInicio BETWEEN feciniestancia AND date_add(feciniestancia, interval numdiasestancia day)) 
+										and (fechaFin BETWEEN feciniestancia AND date_add(feciniestancia, interval numdiasestancia day))))
+                        ) 
+	AND codzona = codigoZona;
+END $$
+delimiter ;
 
+call casasDisponibles ('2012/3/22', '2012/3/30', 1);
+
+call casasDisponibles ('2012/3/18', '2012/3/22', 1);
+
+call casasDisponibles ('2012/3/21', '2012/3/23', 1);
+
+call casasDisponibles ('2012/3/18', '2012/3/30', 1);
 
 
 

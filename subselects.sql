@@ -86,3 +86,12 @@ from empleados
 where salarem <> all(select salarem
 				 from empleados)
 	and numde <> 110;
+    
+start transaction;
+set @nuevocentro = (select max(numce)+1 from centros);
+
+insert into centros
+	(numce, nomce, dirce)
+values
+	(@nuevocentro, 'prueba', 'dirce');
+commit;
