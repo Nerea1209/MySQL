@@ -96,26 +96,17 @@ group by empleados.extelem;
 
 -- 22. Para los departamentos cuyo salario medio supera al de la empresa, 
 -- hallar cuantas extensiones telefónicas tienen.
-start transaction;
-create temporary table if not exists temp
-	(numde int, 
-	 media decimal(7,2)
-	);
-insert into temp
-	(numde, media)
-select numde, round(avg(empleados.salarem),2) as media
+
+select numde, count(empleados.extelem) as NumExtTel,
+	round(avg(empleados.salarem),2)
 from empleados
+where  (select avg(salarem)
+		from empleados) < (select round(avg(empleados.salarem),2) as mediaDev
+						   from empleados as e
+                           where e.numde = empleados.numde
+                           group by numde
+                           )
 group by numde;
-
-select numde, count(empleados.numext) as NumExtTel,
-	media, avg(empleados.salarem) as MediaTotal
-from empleados
-where mediaTotal < (select media 
-				    from temp
-				    where empleados.numde = temp.numde);
-
-drop temporary table  if exists temp;
-commit;
 
 
 -- 24. Hallar por orden alfabético, los nombres de los empleados que son directores en funciones.

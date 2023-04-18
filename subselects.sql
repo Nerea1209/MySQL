@@ -86,7 +86,8 @@ from empleados
 where salarem <> all(select salarem
 				 from empleados)
 	and numde <> 110;
-    
+
+-- Añadir un nuevo centro 
 start transaction;
 set @nuevocentro = (select max(numce)+1 from centros);
 
