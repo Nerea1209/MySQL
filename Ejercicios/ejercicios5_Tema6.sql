@@ -151,6 +151,7 @@ set descripcion = replace(descripcion, 'tarta', 'pastel');
 
 
 
+
 -- 10. Obtén el número de productos de cada categoría, haz que el nombre de 
 -- la categoría se muestre en mayúsculas.
 select categorias.codcategoria, upper(Nomcategoria) as 'Nombre Categoría', 

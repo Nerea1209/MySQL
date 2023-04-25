@@ -1,0 +1,229 @@
+/* EJERCICIO 11 */
+drop procedure if exists ejer_6_1_11_a;
+delimiter $$
+create procedure ejer_6_1_11_a()
+begin
+	-- call ejer_6_1_11_a()
+	SELECT *
+	FROM empleados;
+end $$
+delimiter ;
+
+drop procedure if exists ejer_6_1_11_b;
+delimiter $$
+create procedure ejer_6_1_11_b()
+begin
+	-- call ejer_6_1_11_b()
+	select CONCAT(nomem, ' ', 
+				  ape1em, ' ',
+				  ifnull(ape2em, '')
+				 )
+	from empleados
+	-- where comisem is null or comisem =0;
+	where ifnull(comisem,0) = 0;
+end $$
+delimiter ;
+/* EJERCICIO PROPUESTO:
+COMO EL ANTERIOR, PERO AHORA ELEGIMOS SI QUEREMOS LOS QUE TIENEN
+COMISIÃ“N O LOS QUE NO DEPENDIENDO DE UN PARAMETRO ('CON'/'SIN')
+*/
+
+drop procedure if exists ejer_6_1_11_propuesto;
+delimiter $$
+create procedure ejer_6_1_11_propuesto(in condicion char(3))
+begin
+	-- call ejer_6_1_11_propuesto('SIN');
+	-- call ejer_6_1_11_propuesto('CON');
+	IF condicion = 'SIN' THEN
+	BEGIN
+		select CONCAT(nomem, ' ',
+				  ape1em, ' ',
+				  ifnull(ape2em, '')
+				 ), comisem
+		from empleados
+		-- where comisem is null or comisem =0;
+		where ifnull(comisem,0) = 0;
+	END;
+	ELSE
+	BEGIN
+		select CONCAT(nomem, ' ',
+				  ape1em, ' ',
+				  ifnull(ape2em, '')
+				 ), comisem
+		from empleados
+		-- where comisem >0;
+		where ifnull(comisem,0) > 0;
+	END;
+END IF;
+end $$
+delimiter ;
+
+/* EJERCICIO 12 */
+drop procedure if exists ejer_6_1_12;
+delimiter $$
+create procedure ejer_6_1_12(in nombre varchar(20),
+							 in apellido1 varchar(20))
+begin
+	-- call ejer_6_1_12('Juan', 'LÃ³pez')
+    -- call ejer_6_1_12('Dorinda', 'Lara')
+	select empleados.extelem 
+	from empleados
+	where nomem = nombre and ape1em = apellido1;
+end $$
+delimiter ;
+
+/* EJERCICIO 12 VERSIÃ“N 2*/
+drop procedure if exists ejer_6_1_12_v2;
+delimiter $$
+create procedure ejer_6_1_12_v2(nombrecompleto varchar(50))
+begin
+	-- call ejer_6_1_12_v2('Juan LÃ³pez')
+	select empleados.extelem 
+	from empleados
+	where concat(empleados.nomem, ' ', empleados.ape1em) = nombrecompleto;
+end $$
+delimiter ;
+
+
+/*Prepara un procedimiento almacenado que ejecute la consulta del apartado 3 y 
+otro para la del apartado 4 de forma que nos sirva para averiguar el nombre de aquellos 
+que tengan el número de hijos que deseemos en cada caso.
+*/
+/*
+3.Obtener el nombre completo de los empleados que tienen más de un hijo.
+*/
+drop procedure if exists ejer_6_1_13;
+delimiter $$
+create procedure ejer_6_1_13
+(in hijosmin int)
+begin
+	select CONCAT_WS(' ', nomem,ape1em,ape2em) AS nombre_completo,
+		CONCAT(ape1em, ifnull(concat(' ', ape2em),''), ', ',nomem) AS nombre_completo2,
+		numhiem as 'Num hijos'
+	from empleados
+	where numhiem > hijosmin;
+end $$
+delimiter ;
+-- call ejer_6_1_13(2);
+-- call ejer_6_1_13(3);
+-- call ejer_6_1_13(1);
+
+
+/*4.Obtener el nombre completo y en una sola columna de los empleados que tienen entre 1 y 3 hijos.
+
+*/
+drop procedure if exists ejer_6_1_14;
+delimiter $$
+create procedure ejer_6_1_14
+	(in hijosmin int, in hijosmax int)
+begin
+select CONCAT_WS(' ', nomem,ape1em,ape2em) AS nombre_completo,
+	CONCAT(ape1em, ifnull(concat(' ', ape2em),''), ', ',nomem) AS nombre_completo2,
+	numhiem as 'Num hijos'
+from empleados
+where numhiem between hijosmin and hijosmax;
+-- where numhiem > hijosmin and numhiem < hijosmax; -- si no quisiéramos incluir los extremo
+end $$
+delimiter ;
+-- call ejer_6_1_14(1,3);
+
+-- call ejer_6_1_14(2,4);
+
+/*Prepara un procedimiento almacenado que, dado el nombre de un centro de trabajo, 
+nos DEVUELVAsu dirección.
+*/
+drop procedure if exists ejer_6_1_15;
+delimiter $$
+create procedure ejer_6_1_15
+	(in centro varchar(60),
+     out direccion varchar(60) -- DEVUELVA
+	)
+begin
+/*
+	select dirce into direccion
+	from centros
+	where lower(trim(nomce)) = lower(trim(centro));
+*/
+-- o también:
+    set direccion= ifnull((select dirce 
+						   from centros
+						   where lower(trim(nomce)) = lower(trim(centro))),
+						  'el centro no existe');
+end $$
+delimiter ;
+
+call ejer_6_1_15('xxxxx',@direccion);
+select concat_ws(' ','el resultado de la ejecución es:',@direccion);
+
+/*Prepara un procedimiento almacenado que ejecute la consulta del apartado 7 de forma que nos sirva para 
+averiguar, dada una cantidad, el nombre de los departamentos que tienen un presupuesto superior 
+a dicha cantidad.
+*/
+drop procedure if exists ejer_6_1_16;
+delimiter $$
+create procedure ejer_6_1_16
+	(in cantidad decimal(10,2))
+begin
+	select nomde as 'NOMBRE DEPARTAMENTOS', presude as 'PRESUPUESTO'
+	from departamentos
+	where presude > cantidad;
+end $$
+delimiter ;
+-- call ejer_6_1_16(120000);
+-- call ejer_6_1_16(90000);
+
+
+/*Prepara un procedimiento almacenado que ejecute la consulta del apartado 8 de forma que nos sirva para averiguar, 
+dada una cantidad, el nombre de los departamentos que tienen un presupuesto igual o superior a dicha cantidad.
+*/
+
+drop procedure if exists ejer_6_1_17;
+delimiter $$
+create procedure ejer_6_1_17
+	(in cantmin decimal(10,2), 
+     cantmax decimal(10,2)
+     )
+begin
+select nomde as 'NOMBRE DEPARTAMENTOS',
+	presude as PRESUPUESTO
+from departamentos
+where presude between cantmin and cantmax;
+end $$
+delimiter ;
+-- call ejer_6_1_17(120000, 180000);
+-- call ejer_6_1_17(100000, 150000);
+/* EJERCICIO 18 */
+drop procedure if exists ejer_6_1_18;
+delimiter $$
+create procedure ejer_6_1_18(fecha1 date, fecha2 date)
+begin
+	-- call ejer_6_1_18('1965/1/1', '1986/12/31')
+
+select CONCAT(nomem, ' ',
+			  ape1em, ' ',
+			 ifnull(ape2em,'')
+		) as nombre, fecinem
+from empleados
+-- where fecinem >= fecha1 and fecinem <= fecha2
+ where fecinem between fecha1 and fecha2
+order by fecinem ;
+end $$
+delimiter ;
+
+/* EJERCICIO 19 */
+drop procedure if exists ejer_5_1_19;
+delimiter $$
+create procedure ejer_5_1_19(fecha1 date, fecha2 date)
+begin
+	-- call ejer_5_1_19('1965/1/1', '1986/12/31')
+
+select CONCAT(nomem, ' ',
+			  ape1em, ' ',
+			 ifnull(ape2em,'')
+		) as nombre, fecinem
+from empleados
+-- where fecinem < fecha1 OR  fecinem > fecha2
+ where fecinem not between fecha1 and fecha2
+order by fecinem;
+end $$
+delimiter ;
