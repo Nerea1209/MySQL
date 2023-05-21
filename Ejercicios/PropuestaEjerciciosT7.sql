@@ -3,12 +3,22 @@ Para la bd promociones:
 Prepara una vista que se llamará CATALOGOPRODUCTOS  que tenga la referencia del artículo,
 código y nombre de categoría, nombre del artículo, el precio base y el precio de venta HOY 
 */
+/*
+Esto estaría bien si no existiesen las promociones
+drop view if exists CATALOGOPRODUCTOS;
+create view CATALOGOPRODUCTOS as
+select articulos.refart, articulos.codcat, categorias.nomcat, articulos.nomart, articulos.preciobase, articulos.precioventa
+from articulos
+	join categorias on articulos.codcat = categorias.codcat;
+*/
 
 drop view if exists CATALOGOPRODUCTOS;
 create view CATALOGOPRODUCTOS as
 select articulos.refart, articulos.codcat, categorias.nomcat, articulos.nomart, articulos.preciobase, articulos.precioventa
 from articulos
 	join categorias on articulos.codcat = categorias.codcat;
+
+
 
 /* Para la bd de empresaclase:
 Prepara una vista que se llamerá LISTINTELEFONICO en la que cada usuario podrá consultar la extensión
@@ -20,8 +30,8 @@ AL CREAR LA VISTA TENER EN CUENTA ESTO:
 
 drop view if exists LISTINTELEFONICO;
 create  sql security invoker view LISTINTELEFONICO as
-select empleados.nomem, empleados.extelem
+select empleados.nomem, empleados.extelem, numde
 from empleados
 where (select empleados.numde
 	   from empleados
-       where empleados.userem = user()) = empleados.numde;
+       where empleados.userem = left(user(), locate('@', user())-1)) = empleados.numde;
